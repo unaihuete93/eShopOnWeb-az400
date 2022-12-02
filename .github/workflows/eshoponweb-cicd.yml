@@ -34,5 +34,27 @@ jobs:
         name: .net-app
         path: ${{env.DOTNET_ROOT}}/myapp
         
-    deploy:
+  deploy:
+    runs-on: ubuntu-latest
+    needs: buildandtest
+    environment:
+      name: 'Development'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    steps:
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_SP }}
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v3
+      with:
+        name: .net-app
+        
+        
+        
+    - name: Publish Website to WebApp
+      uses: Azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.webappname }}
+        package: ${{ env.Pipeline.Workspace }}/**/Web.zip
    
