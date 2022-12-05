@@ -51,7 +51,7 @@ jobs:
     - name: Azure Login
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.CREDENTIALS }}
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
            
     # Deploy Bicep file
     - name: deploy
@@ -68,5 +68,5 @@ jobs:
       uses: Azure/webapps-deploy@v2
       with:
         app-name: ${{ env.WEBAPP-NAME  }}
-        package: ${{ env.Pipeline.Workspace }}/**/Web.zip
+        package: ${{ env.Pipeline.Workspace }}/myapp
    
