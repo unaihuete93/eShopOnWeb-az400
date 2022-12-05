@@ -55,6 +55,15 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: .net-app
+        path: .net-app
+  
+    #Download the bicep templates 
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v3
+      with:
+        name: bicep-template
+        path: bicep-template
+        
    #Login in your azure subscription using a service principal (credentials stored as GitHub Secret in repo)
     - name: Azure Login
       uses: azure/login@v1
@@ -67,7 +76,7 @@ jobs:
       with:
         subscriptionId: ${{ env.SUBSCRIPTION-ID }}
         resourceGroupName: ${{ env.RESOURCE-GROUP }}
-        template: ${{ env.Pipeline.Workspace }}/bicep-template/webapp.bicep
+        template: bicep-template/webapp.bicep
         parameters: 'webAppName=${{ env.WEBAPP-NAME }} location=${{ env.LOCATION }}'
         failOnStdErr: false   
     
@@ -76,5 +85,5 @@ jobs:
       uses: Azure/webapps-deploy@v2
       with:
         app-name: ${{ env.WEBAPP-NAME  }}
-        package: ${{ env.Pipeline.Workspace }}/myapp
+        package: .net-app/myapp
    
