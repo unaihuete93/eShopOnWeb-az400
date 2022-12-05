@@ -28,11 +28,19 @@ jobs:
       run: dotnet test ./eShopOnWeb.sln --configuration Release
     - name: dotnet publish
       run: dotnet publish ./src/Web/Web.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+      # upload the published website
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v3
       with:
         name: .net-app
         path: ${{env.DOTNET_ROOT}}/myapp
+        
+    # upload the bicep template for later deploy
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v3
+      with:
+        name: bicep-template
+        path: ${{ env.TEMPLATE-FILE }}
         
   deploy:
     runs-on: ubuntu-latest
@@ -59,7 +67,7 @@ jobs:
       with:
         subscriptionId: ${{ env.SUBSCRIPTION-ID }}
         resourceGroupName: ${{ env.RESOURCE-GROUP }}
-        template: ${{ env.TEMPLATE-FILE }}
+        template: ${{ env.Pipeline.Workspace }}/bicep-template/webapp.bicep
         parameters: 'webAppName=${{ env.WEBAPP-NAME }} location=${{ env.LOCATION }}'
         failOnStdErr: false   
     
