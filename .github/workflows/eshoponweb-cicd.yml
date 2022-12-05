@@ -3,16 +3,16 @@ name: eShopOnWeb Build and Test
 on: [push, workflow_dispatch]
 
 env:
-  resource-group: rg-az400-eshopeonweb-NAME
-  location: westeurope
-  templateFile: .azure/bicep/webapp.bicep
-  # subscriptionid: YOUR-SUBSCRIPTION-ID
-  subscriptionid: YOUR-SUBSCRIPTION-ID
-  azureserviceconnection: azure subs
-  webappname: az400-webapp-NAME
+  #RESOURCE-GROUP: rg-az400-eshopeonweb-NAME
+  RESOURCE-GROUP: rg-az400-eshopeonweb-unaigh
+  LOCATION: westeurope
+  TEMPLATE-FILE: .azure/bicep/webapp.bicep
+  SUBSCRIPTION-ID: 6829b3f6-89a8-4e99-9260-9c1602b2ca33
+  #WEBAPP-NAME: az400-webapp-NAME
+  WEBAPP-NAME: az400-webapp-unaigh
 
 jobs:
-
+  #Build, test and publish .net web project in repository
   buildandtest:
     runs-on: ubuntu-latest
     steps:
@@ -27,7 +27,7 @@ jobs:
     - name: Test with dotnet
       run: dotnet test ./eShopOnWeb.sln --configuration Release
     - name: dotnet publish
-      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+      run: dotnet publish ./eShopOnWeb.sln -c Release -o ${{env.DOTNET_ROOT}}/myapp
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v3
       with:
@@ -41,20 +41,32 @@ jobs:
       name: 'Development'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     steps:
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_SP }}
+    
+    #Download the publish files created in previous job
     - name: Download artifact from build job
       uses: actions/download-artifact@v3
       with:
         name: .net-app
-        
-        
-        
+   #Login in your azure subscription using a service principal (credentials stored as GitHub Secret in repo)
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.CREDENTIALS }}
+           
+    # Deploy Bicep file
+    - name: deploy
+      uses: azure/arm-deploy@v1
+      with:
+        subscriptionId: ${{ env.SUBSCRIPTION-ID }}
+        resourceGroupName: ${{ env.RESOURCE-GROUP }}
+        template: ${{ env.TEMPLATE-FILE }}
+        parameters: 'webAppName=${{ env.WEBAPP-NAME }} location=${{ env.LOCATION }}'
+        failOnStdErr: false   
+    
+    # Publish website to Azure App Service (WebApp)
     - name: Publish Website to WebApp
       uses: Azure/webapps-deploy@v2
       with:
-        app-name: ${{ env.webappname }}
+        app-name: ${{ env.WEBAPP-NAME  }}
         package: ${{ env.Pipeline.Workspace }}/**/Web.zip
    
