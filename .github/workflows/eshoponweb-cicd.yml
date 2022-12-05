@@ -54,7 +54,6 @@ jobs:
     needs: buildandtest
     environment:
       name: 'Development'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     steps:
     
     #Download the publish files created in previous job
